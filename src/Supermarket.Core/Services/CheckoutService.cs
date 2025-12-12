@@ -15,6 +15,8 @@ namespace Supermarket.Core.Services
 
         public void Scan(string item)
         {
+            // TODO discount rules should only be fetched once
+
             var product = _productService.GetProduct(item);
 
             if (product == null)
@@ -27,7 +29,20 @@ namespace Supermarket.Core.Services
 
         public int GetTotalPrice()
         {
-            throw new NotImplementedException();
+            var cartItems = _cartService.GetAllItems();
+
+            // TODO refactor - does not seem right to scan through each, need a wrapper for prices and counts
+            Dictionary<int, int> priceCount = new Dictionary<int, int>();
+            foreach (var cartItem in cartItems)
+            {
+                var price = _productService.GetProduct(cartItem.Key)?.UnitPrice;
+                if (price != null) 
+                {
+                    priceCount.Add(price.Value, cartItem.Value);
+                }
+            }
+
+            return 0;
         }
     }
 }
