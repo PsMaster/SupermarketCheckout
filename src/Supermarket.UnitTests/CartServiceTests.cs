@@ -43,5 +43,22 @@ namespace Supermarket.UnitTests
             cartItems.Should().HaveCount(1);
             cartItems["A"].Count.Should().Be(2);
         }
+
+        [Fact]
+        public void IsCartEmpty_ShouldReturnTrue_WhenCartIsNew()
+        {
+            // Act and Assert
+            _cartService.IsCartEmpty().Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsCartEmpty_ShouldReturnFalse_WhenItemsExist()
+        {
+            // Arrange
+            _cartService.AddItem(new Product("A", 50));
+
+            // Act and Assert
+            _cartService.IsCartEmpty().Should().BeFalse();
+        }
     }
 }
