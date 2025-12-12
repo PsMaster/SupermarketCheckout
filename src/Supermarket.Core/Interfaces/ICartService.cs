@@ -7,7 +7,7 @@ namespace Supermarket.Core.Interfaces
         void AddItem(Product item);
         void RemoveItem(Product item);
         void ClearCart();
-        IReadOnlyDictionary<string, int> GetAllItems();
+        IReadOnlyDictionary<string, ItemCountWrapper> GetAllItems();
         bool IsCartEmpty();
     }
 }

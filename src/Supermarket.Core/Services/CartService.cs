@@ -5,35 +5,40 @@ namespace Supermarket.Core.Services
 {
     public class CartService : ICartService
     {
-
-        public CartService()
-        {
-            
-        }
+        private readonly Dictionary<string, ItemCountWrapper> _cart = new();
 
         public void AddItem(Product item)
         {
-            throw new NotImplementedException();
+            if (_cart.TryGetValue(item.Sku, out var value))
+            {
+                value.Count++;
+            }
+            else
+            {
+                _cart.Add(item.Sku, new ItemCountWrapper(item) { Count = 1});
+            }
         }
 
         public void RemoveItem(Product item)
         {
-            throw new NotImplementedException();
+            if (!_cart.TryGetValue(item.Sku, out var value)) return;
+            if (value.Count <= 1)
+            {
+                _cart.Remove(item.Sku);
+            }
+            else
+            {
+                value.Count--;
+            }
         }
 
-        public void ClearCart()
-        {
-            throw new NotImplementedException();
-        }
+        public void ClearCart() => _cart.Clear();
 
-        public IReadOnlyDictionary<string, int> GetAllItems()
-        {
-            throw new NotImplementedException();
-        }
+        public IReadOnlyDictionary<string, ItemCountWrapper> GetAllItems() => _cart.AsReadOnly();
 
         public bool IsCartEmpty()
         {
-            throw new NotImplementedException();
+            return _cart.Count == 0;
         }
     }
 }

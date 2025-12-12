@@ -16,7 +16,7 @@ namespace Supermarket.UnitTests
             // Arrange
 
             // Act
-            var rules = _rulesService.GetDicountRules();
+            var rules = _rulesService.GetDiscountRules();
 
             // Assert
             Assert.Equal(2, rules.Count());

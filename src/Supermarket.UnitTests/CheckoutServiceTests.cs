@@ -45,10 +45,10 @@ namespace Supermarket.UnitTests
         public void GetTotalPrice_ShouldGiveCorrectAmount()
         {
             // Arrange
-            _cartServiceMock.Setup(x => x.GetAllItems()).Returns(new Dictionary<string, int>()
+            _cartServiceMock.Setup(x => x.GetAllItems()).Returns(new Dictionary<string, ItemCountWrapper>()
             {
-                { "A", 1 },
-                { "B", 1 }
+                { "A", new ItemCountWrapper(productA) {Count = 1} },
+                { "B", new ItemCountWrapper(productB) {Count = 1} }
             });
 
             // Act

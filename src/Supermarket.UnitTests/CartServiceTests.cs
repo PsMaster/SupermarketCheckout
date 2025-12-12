@@ -17,7 +17,7 @@ namespace Supermarket.UnitTests
         public void AddItem_ShouldAddItemToCart_WhenItemDoesNotExist()
         {
             // Arrange
-            var product = new Product("SKU_123", 100);
+            var product = new Product("A", 50);
 
             // Act
             _cartService.AddItem(product);
@@ -25,14 +25,14 @@ namespace Supermarket.UnitTests
             // Assert
             var cartItems = _cartService.GetAllItems();
             cartItems.Should().HaveCount(1);
-            cartItems["SKU_123"].Should().Be(1);
+            cartItems["A"].Count.Should().Be(1);
         }
 
         [Fact]
         public void AddItem_ShouldIncrementCount_WhenItemAlreadyExists()
         {
             // Arrange
-            var product = new Product("SKU_123", 100);
+            var product = new Product("A", 50);
             _cartService.AddItem(product);
 
             // Act
@@ -41,7 +41,7 @@ namespace Supermarket.UnitTests
             // Assert
             var cartItems = _cartService.GetAllItems();
             cartItems.Should().HaveCount(1);
-            cartItems["SKU_123"].Should().Be(2);
+            cartItems["A"].Count.Should().Be(2);
         }
     }
 }

@@ -30,19 +30,8 @@ namespace Supermarket.Core.Services
         public int GetTotalPrice()
         {
             var cartItems = _cartService.GetAllItems();
-
-            // TODO refactor - does not seem right to scan through each, need a wrapper for prices and counts
-            Dictionary<int, int> priceCount = new Dictionary<int, int>();
-            foreach (var cartItem in cartItems)
-            {
-                var price = _productService.GetProduct(cartItem.Key)?.UnitPrice;
-                if (price != null) 
-                {
-                    priceCount.Add(price.Value, cartItem.Value);
-                }
-            }
-
-            return 0;
+            
+            return cartItems.Sum(i => i.Value.Count * i.Value.Item.UnitPrice);
         }
     }
 }
