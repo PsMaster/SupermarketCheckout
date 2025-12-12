@@ -16,6 +16,10 @@ namespace Supermarket.Core.Services
             _discountRulesService = discountRulesService;
         }
 
+        /// <summary>
+        /// Scans SKU of the product. If product exits it will be added to the current user cart.
+        /// </summary>
+        /// <param name="item">Product SKU</param>
         public void Scan(string item)
         {
             var product = _productService.GetProduct(item);
@@ -35,6 +39,10 @@ namespace Supermarket.Core.Services
             _cartService.AddItem(product);
         }
 
+        /// <summary>
+        /// Get total basket cost
+        /// </summary>
+        /// <returns>int - total basket cost</returns>
         public int GetTotalPrice()
         {
             if (_cartService.IsCartEmpty() || _currentTransactionRules == null)
@@ -53,6 +61,9 @@ namespace Supermarket.Core.Services
             return total;
         }
 
+        /// <summary>
+        /// Clears cart and transaction rules
+        /// </summary>
         public void Checkout()
         {
             // TODO process payment and anything else that need to happen during checkout
