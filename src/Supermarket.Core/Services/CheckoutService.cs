@@ -52,5 +52,14 @@ namespace Supermarket.Core.Services
 
             return total;
         }
+
+        public void Checkout()
+        {
+            // TODO process payment and anything else that need to happen during checkout
+
+            // reset state
+            _cartService.ClearCart();
+            _currentTransactionRules = null;
+        }
     }
 }
