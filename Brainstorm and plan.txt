@@ -1,0 +1,67 @@
+Brainstorming, assumptions and planning.
+
+Goal: Checkout system for supermarket with discounts/rules, assuming a POS.
+
+B(30) + B(30) + A(50) = 110 but 2 x B = 45 so 45 + 50 = 95
+
+6 x A(50) = 300 but 3 x A = 130 so 2 x 3A(130) = 260   
+
+Considerations for future, things to think about:
+Mix and match rules? Meal deal? General % discount (was x now y)? Loyalty card discount?
+Offline support if new discounts or up to date products list is not available?
+
+Questions to be answered:
+Should I split "Special price" into 2 columns like "discount_quantity" and "discounted_price"?
+How frequent is the price change?
+Should I take concurrency into account for cart functionality?
+
+
+Facts/definittions (F): 
+1. SKU (string) - primary identifier, unique
+2. Each item is priced individually
+3. Each item is scanned individually.
+4. Order of item scanning should not affect the outcome.
+5. Same offer can apply multiple times.
+6. Pricing changes frequently
+
+
+Assumptions (A):
+1. Assuming SKU is unique and can never change.
+2. "some items are multipriced" assuming this would be treated as a type of discount rather than "multiple prices for the same item", assuming the term "Discounted price" is correct.
+3. "we need to be able to pass in a set of pricing rules each time we start handling a checkout transaction" 
+In other words, assuming that the rules should be read and applied at the start of the checkout process rather than change mid way through the checkout process.
+Requires "rule state management" or a checkout session identifier or similar approach.
+4. For the sake of simplicity the cart and the products list will be an in memory collection (or configuration) rather than an external centralised service like a database
+and will not be available from multiple instances of the service.
+5. Assuming performance would be priority for a checkout
+6. Assuming removing a product from the cart should recalculate.
+7. Given the interface methods are sync, assuming the code is synchronous and does not use async pattern, at least for now 
+8. Assuming the code is to be used for a kind of POS rather than an API for an online store or other use cases?
+9. Only a single customer can start the checkout process, no odd cases where multiple customers start individual checkouts (concurrency)
+10. Checkout process begins when the first item is scanned.
+11. Assuming that the amount of items in a single purchase is not a performance bottleneck and the POS is powerfull enough to do cart itterations
+
+
+Plan of action (P) and deliberations:
+Create core shared library and define base classes.
+Define critical services and methods for the given requirements.
+What approcah would satisfy the requirements better? Strategy, rules engine?
+Simplest solution would be to implement a single type of rule and just use linq to group and apply different prices where it matches criteria. (probably a bad choice due to performance and lack of flexibility)
+Create unit tests project and write test first approach with mocks. 
+Ensure proof of concept would work with mocks, define how the checkout process will be done.
+Write more test definitions for particular scenarios add/remove.
+Write implementation, account for exceptions and error handling and logging.
+
+
+
+Services and interactions:
+
+RulesService -> GetRules (to be called at the start of the checkout process)
+Cart Service -> GetAllItems, AddItem, RemoveItem, ClearCart
+CheckoutService -> Scan (first item triggers process start), GetTotalPrice, Checkout (ClearCart)
+ProductsRepository -> GetProduct
+
+
+Flows: 
+CheckoutService.Scan -> ProductsService.GetProduct -> RulesService.GetRules (only if first item) -> CartService.AddItem
+CheckoutService.GetTotalPrice -> CartService.GetAllItems -> sum - RulesService.CalculateDiscount() = total;
