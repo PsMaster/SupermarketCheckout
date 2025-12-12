@@ -5,6 +5,12 @@ namespace Supermarket.Core.Services
 {
     public class CartService : ICartService
     {
+
+        public CartService()
+        {
+            
+        }
+
         public void AddItem(Product item)
         {
             throw new NotImplementedException();

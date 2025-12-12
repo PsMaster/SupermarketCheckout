@@ -9,11 +9,13 @@ namespace Supermarket.UnitTests
     {
         private readonly CheckoutService _checkoutService;
         private readonly Mock<ICartService> _cartServiceMock;
+        private readonly Mock<IProductService> _productServiceMock;
 
         public CheckoutServiceTests()
         {
             _cartServiceMock = new Mock<ICartService>();
-            _checkoutService = new CheckoutService();
+            _productServiceMock = new Mock<IProductService>();
+            _checkoutService = new CheckoutService(_cartServiceMock.Object, _productServiceMock.Object);
         }
 
         [Fact]
