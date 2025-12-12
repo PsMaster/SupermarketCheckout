@@ -11,7 +11,7 @@ namespace Supermarket.UnitTests
         private readonly CheckoutService _checkoutService;
         private readonly Mock<ICartService> _cartServiceMock;
         private readonly Mock<IProductService> _productServiceMock;
-        private readonly Mock<IRulesService> _rulesServiceServiceMock;
+        private readonly Mock<IRulesService> _rulesServiceMock;
 
         Product productA = new("A", 50);
         Product productB = new("B", 30);
@@ -28,16 +28,16 @@ namespace Supermarket.UnitTests
         {
             _cartServiceMock = new Mock<ICartService>();
             _productServiceMock = new Mock<IProductService>();
-            _rulesServiceServiceMock = new Mock<IRulesService>();
+            _rulesServiceMock = new Mock<IRulesService>();
 
             _productServiceMock.Setup(x => x.GetProduct("A")).Returns(productA);
             _productServiceMock.Setup(x => x.GetProduct("B")).Returns(productB);
             _productServiceMock.Setup(x => x.GetProduct("C")).Returns(productC);
             _productServiceMock.Setup(x => x.GetProduct("D")).Returns(productD);
 
-            _rulesServiceServiceMock.Setup(x => x.GetDiscountRules()).Returns(_rules);
+            _rulesServiceMock.Setup(x => x.GetDiscountRules()).Returns(_rules);
 
-            _checkoutService = new CheckoutService(_cartServiceMock.Object, _productServiceMock.Object, _rulesServiceServiceMock.Object);
+            _checkoutService = new CheckoutService(_cartServiceMock.Object, _productServiceMock.Object, _rulesServiceMock.Object);
         }
 
         [Fact]
@@ -67,12 +67,82 @@ namespace Supermarket.UnitTests
             // Act
             // Have to do a scan to initialize the rules
             _checkoutService.Scan("A");
-            // TODO currently throws need to implement rules logic
             var totalPrice = _checkoutService.GetTotalPrice();
 
             // Assert
             Assert.Equal(80, totalPrice);
+        }
 
+        [Fact]
+        public void Scan_ItemInCart_DoesNotFetchNewRules()
+        {
+            // Arrange
+            _cartServiceMock.Setup(x => x.GetAllItems())
+                .Returns(new Dictionary<string, ItemCountWrapper>
+                {
+                    {
+                        "A", new ItemCountWrapper(productA) { Count = 1 }
+                    }
+                });
+            _cartServiceMock.Setup(x => x.IsCartEmpty()).Returns(false);
+
+            // Act
+            _checkoutService.Scan("B");
+
+            // Assert
+            _rulesServiceMock.Verify(r => r.GetDiscountRules(), Times.Never);
+            _cartServiceMock.Verify(c => c.AddItem(productB), Times.Once);
+        }
+
+        [Fact]
+        public void GetTotalPrice_CalculatesUsingLoadedRulesForA()
+        {
+            // Arrange
+            var cartItems = new Dictionary<string, ItemCountWrapper>
+            {
+                {
+                    "A", new ItemCountWrapper(productA) { Count = 6 }
+                }
+            };
+            _cartServiceMock.Setup(x => x.GetAllItems()).Returns(cartItems);
+            _cartServiceMock.SetupSequence(x => x.IsCartEmpty()).Returns(true).Returns(false);
+
+            var mockRule = new Mock<IPricingRuleStrategy>();
+            mockRule.Setup(x => x.CalculateDiscount(cartItems)).Returns(40);
+
+            _rulesServiceMock.Setup(x => x.GetDiscountRules()).Returns(new List<IPricingRuleStrategy> { mockRule.Object });
+
+            // Act
+            _checkoutService.Scan("A");
+            var total = _checkoutService.GetTotalPrice();
+
+            // Assert
+            Assert.Equal(260, total);
+        }
+
+        [Fact]
+        public void GetTotalPrice_CalculatesUsingLoadedRulesForCombination()
+        {
+            // Arrange
+            var cartItems = new Dictionary<string, ItemCountWrapper>
+            {
+                { "B", new ItemCountWrapper(productB) { Count = 2 } },
+                { "A", new ItemCountWrapper(productA) { Count = 1 } }
+            };
+            _cartServiceMock.Setup(x => x.GetAllItems()).Returns(cartItems);
+            _cartServiceMock.SetupSequence(x => x.IsCartEmpty()).Returns(true).Returns(false);
+
+            var mockRule = new Mock<IPricingRuleStrategy>();
+            mockRule.Setup(x => x.CalculateDiscount(cartItems)).Returns(15);
+
+            _rulesServiceMock.Setup(x => x.GetDiscountRules()).Returns(new List<IPricingRuleStrategy> { mockRule.Object });
+
+            // Act
+            _checkoutService.Scan("A");
+            var total = _checkoutService.GetTotalPrice();
+
+            // Assert
+            Assert.Equal(95, total);
         }
     }
 }

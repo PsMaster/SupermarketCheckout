@@ -18,7 +18,13 @@ namespace Supermarket.DataAccess.PricingRules
 
         public int CalculateDiscount(IReadOnlyDictionary<string, ItemCountWrapper> cart)
         {
-            throw new NotImplementedException();
+            if (!cart.TryGetValue(Sku, out var value))
+                return 0;
+
+            var setsCount = value.Count / SpecialQuantity;
+            var totalPrice = setsCount * SpecialQuantity * value.Item.UnitPrice;
+            var discountedPrice = setsCount * SpecialPrice;
+            return totalPrice - discountedPrice;
         }
     }
 }
